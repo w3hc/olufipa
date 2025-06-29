@@ -38,11 +38,7 @@ contract MockKlerosCourt {
      * @param ruling The ruling decision (0=pending, 1=no violation, 2=violation confirmed)
      * @param ruler The address that provided the ruling
      */
-    event Ruling(
-        uint256 indexed disputeID,
-        uint256 ruling,
-        address indexed ruler
-    );
+    event Ruling(uint256 indexed disputeID, uint256 ruling, address indexed ruler);
 
     /**
      * @notice Creates a new dispute in the arbitration system
@@ -70,10 +66,7 @@ contract MockKlerosCourt {
      *                2 = Violation confirmed (ruling against the accused)
      */
     function giveRuling(uint256 _disputeID, uint256 _ruling) external {
-        require(
-            _disputeID > 0 && _disputeID <= disputeCounter,
-            "Invalid dispute ID"
-        );
+        require(_disputeID > 0 && _disputeID <= disputeCounter, "Invalid dispute ID");
         require(_ruling <= 2, "Invalid ruling value");
 
         rulings[_disputeID] = _ruling;
@@ -120,10 +113,7 @@ contract MockKlerosCourt {
      * @return True if the dispute has been ruled upon, false otherwise
      */
     function isDisputeRuled(uint256 _disputeID) external view returns (bool) {
-        require(
-            _disputeID > 0 && _disputeID <= disputeCounter,
-            "Invalid dispute ID"
-        );
+        require(_disputeID > 0 && _disputeID <= disputeCounter, "Invalid dispute ID");
         return rulings[_disputeID] != 0;
     }
 }

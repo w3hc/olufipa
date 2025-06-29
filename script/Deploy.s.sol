@@ -23,8 +23,7 @@ import "../src/MockKlerosCourt.sol";
 contract Deploy is Script {
     /// @notice The default private key for local Anvil development
     /// @dev This is the first account in Anvil's default mnemonic - only use for local testing
-    uint256 private constant ANVIL_DEFAULT_KEY =
-        0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+    uint256 private constant ANVIL_DEFAULT_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
 
     /// @notice Anvil's default chain ID for local development
     uint256 private constant ANVIL_CHAIN_ID = 31337;
@@ -37,10 +36,7 @@ contract Deploy is Script {
      * @param chainId The chain ID where contracts were deployed
      */
     event ContractsDeployed(
-        address indexed klerosAddress,
-        address indexed enforcerAddress,
-        address indexed deployer,
-        uint256 chainId
+        address indexed klerosAddress, address indexed enforcerAddress, address indexed deployer, uint256 chainId
     );
 
     /**
@@ -62,21 +58,14 @@ contract Deploy is Script {
         MockKlerosCourt kleros = deployMockKleros();
 
         // Deploy main enforcement contract with Kleros address
-        InternationalLawEnforcer intlLaw = deployInternationalLawEnforcer(
-            address(kleros)
-        );
+        InternationalLawEnforcer intlLaw = deployInternationalLawEnforcer(address(kleros));
 
         vm.stopBroadcast();
 
         // Log deployment information
         logDeploymentInfo(address(kleros), address(intlLaw), deployerAddress);
 
-        emit ContractsDeployed(
-            address(kleros),
-            address(intlLaw),
-            deployerAddress,
-            block.chainid
-        );
+        emit ContractsDeployed(address(kleros), address(intlLaw), deployerAddress, block.chainid);
     }
 
     /**
@@ -114,14 +103,10 @@ contract Deploy is Script {
      * @param klerosAddress The address of the previously deployed MockKlerosCourt
      * @return The deployed InternationalLawEnforcer contract instance
      */
-    function deployInternationalLawEnforcer(
-        address klerosAddress
-    ) internal returns (InternationalLawEnforcer) {
+    function deployInternationalLawEnforcer(address klerosAddress) internal returns (InternationalLawEnforcer) {
         console.log("Deploying InternationalLawEnforcer...");
 
-        InternationalLawEnforcer intlLaw = new InternationalLawEnforcer(
-            klerosAddress
-        );
+        InternationalLawEnforcer intlLaw = new InternationalLawEnforcer(klerosAddress);
 
         console.log("InternationalLawEnforcer deployed at:", address(intlLaw));
         return intlLaw;
@@ -134,14 +119,8 @@ contract Deploy is Script {
      * @param enforcerAddress Address of the deployed InternationalLawEnforcer
      * @param deployerAddress Address that deployed the contracts
      */
-    function logDeploymentInfo(
-        address klerosAddress,
-        address enforcerAddress,
-        address deployerAddress
-    ) internal view {
-        console.log(
-            "\n==================== DEPLOYMENT COMPLETE ===================="
-        );
+    function logDeploymentInfo(address klerosAddress, address enforcerAddress, address deployerAddress) internal view {
+        console.log("\n==================== DEPLOYMENT COMPLETE ====================");
         console.log("Chain ID:", block.chainid);
         console.log("Block Number:", block.number);
         console.log("Deployer:", deployerAddress);
@@ -162,9 +141,7 @@ contract Deploy is Script {
             console.log("InternationalLawEnforcer verification:");
             console.log("forge verify-contract");
             console.log(enforcerAddress);
-            console.log(
-                "src/InternationalLawEnforcer.sol:InternationalLawEnforcer"
-            );
+            console.log("src/InternationalLawEnforcer.sol:InternationalLawEnforcer");
             console.log("--constructor-args");
 
             // Convert constructor args to hex string for verification
@@ -173,9 +150,7 @@ contract Deploy is Script {
             console.logBytes(constructorArgs);
         }
 
-        console.log(
-            "============================================================\n"
-        );
+        console.log("============================================================\n");
     }
 
     /**
@@ -185,19 +160,10 @@ contract Deploy is Script {
      * @param enforcerAddress Address to validate for InternationalLawEnforcer
      * @return success True if both contracts have code, false otherwise
      */
-    function validateDeployment(
-        address klerosAddress,
-        address enforcerAddress
-    ) external view returns (bool success) {
+    function validateDeployment(address klerosAddress, address enforcerAddress) external view returns (bool success) {
         // Check that contracts have code
-        require(
-            klerosAddress.code.length > 0,
-            "MockKlerosCourt deployment failed"
-        );
-        require(
-            enforcerAddress.code.length > 0,
-            "InternationalLawEnforcer deployment failed"
-        );
+        require(klerosAddress.code.length > 0, "MockKlerosCourt deployment failed");
+        require(enforcerAddress.code.length > 0, "InternationalLawEnforcer deployment failed");
 
         return true;
     }

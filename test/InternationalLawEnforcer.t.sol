@@ -44,26 +44,12 @@ contract InternationalLawEnforcerTest is Test {
     uint256 public constant REPORTING_FEE = 0.01 ether;
 
     // Events to test
-    event CountryRegistered(
-        address indexed country,
-        string name,
-        uint256 deposit
-    );
+    event CountryRegistered(address indexed country, string name, uint256 deposit);
     event ViolationReported(
-        uint256 indexed reportID,
-        address indexed violator,
-        InternationalLawEnforcer.ViolationType violationType
+        uint256 indexed reportID, address indexed violator, InternationalLawEnforcer.ViolationType violationType
     );
-    event ViolationResolved(
-        uint256 indexed reportID,
-        bool violationConfirmed,
-        uint256 penalty
-    );
-    event PenaltyDistributed(
-        uint256 indexed reportID,
-        uint256 penalty,
-        address violator
-    );
+    event ViolationResolved(uint256 indexed reportID, bool violationConfirmed, uint256 penalty);
+    event PenaltyDistributed(uint256 indexed reportID, uint256 penalty, address violator);
 
     /**
      * @notice Set up test environment before each test
@@ -118,27 +104,23 @@ contract InternationalLawEnforcerTest is Test {
      */
     function test_CountryRegistration() public view {
         // Verify countries are registered correctly
-        InternationalLawEnforcer.Country memory franceInfo = intlLaw
-            .getCountryInfo(france);
+        InternationalLawEnforcer.Country memory franceInfo = intlLaw.getCountryInfo(france);
         assertEq(franceInfo.name, "France");
         assertEq(franceInfo.depositAmount, COUNTRY_DEPOSIT);
         assertEq(franceInfo.complianceScore, 100);
         assertTrue(franceInfo.isParticipating);
         assertEq(franceInfo.violationCount, 0);
 
-        InternationalLawEnforcer.Country memory usaInfo = intlLaw
-            .getCountryInfo(usa);
+        InternationalLawEnforcer.Country memory usaInfo = intlLaw.getCountryInfo(usa);
         assertEq(usaInfo.name, "United States of America");
         assertEq(usaInfo.depositAmount, COUNTRY_DEPOSIT);
         assertTrue(usaInfo.isParticipating);
 
-        InternationalLawEnforcer.Country memory germanyInfo = intlLaw
-            .getCountryInfo(germany);
+        InternationalLawEnforcer.Country memory germanyInfo = intlLaw.getCountryInfo(germany);
         assertEq(germanyInfo.name, "Germany");
         assertTrue(germanyInfo.isParticipating);
 
-        InternationalLawEnforcer.Country memory chinaInfo = intlLaw
-            .getCountryInfo(china);
+        InternationalLawEnforcer.Country memory chinaInfo = intlLaw.getCountryInfo(china);
         assertEq(chinaInfo.name, "China");
         assertTrue(chinaInfo.isParticipating);
     }
@@ -178,15 +160,12 @@ contract InternationalLawEnforcerTest is Test {
         uint256 additionalDeposit = 100 ether;
 
         // Get initial deposit amount
-        uint256 initialDeposit = intlLaw
-            .getCountryInfo(freshCountry)
-            .depositAmount;
+        uint256 initialDeposit = intlLaw.getCountryInfo(freshCountry).depositAmount;
 
         vm.prank(freshCountry);
         intlLaw.addDeposit{value: additionalDeposit}();
 
-        InternationalLawEnforcer.Country memory countryInfo = intlLaw
-            .getCountryInfo(freshCountry);
+        InternationalLawEnforcer.Country memory countryInfo = intlLaw.getCountryInfo(freshCountry);
         assertEq(countryInfo.depositAmount, initialDeposit + additionalDeposit);
     }
 
@@ -201,19 +180,13 @@ contract InternationalLawEnforcerTest is Test {
      */
     function test_NetanyahuAirspaceViolation() public {
         console2.log("=== Netanyahu Airspace Violation Scenario ===");
-        console2.log(
-            "France allows Netanyahu to fly through its airspace despite ICC arrest warrant"
-        );
+        console2.log("France allows Netanyahu to fly through its airspace despite ICC arrest warrant");
 
         // Germany reports France for allowing Netanyahu to fly through French airspace
         // This violates international law regarding enforcement of ICC arrest warrants
         vm.prank(germany);
         vm.expectEmit(true, true, false, true);
-        emit ViolationReported(
-            1,
-            france,
-            InternationalLawEnforcer.ViolationType.HUMAN_RIGHTS
-        );
+        emit ViolationReported(1, france, InternationalLawEnforcer.ViolationType.HUMAN_RIGHTS);
 
         intlLaw.reportViolation{value: REPORTING_FEE}(
             france,
@@ -223,27 +196,18 @@ contract InternationalLawEnforcerTest is Test {
         );
 
         // Verify the violation report was created
-        InternationalLawEnforcer.ViolationReport memory report = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(1);
         assertEq(report.reporter, germany);
         assertEq(report.violatorCountry, france);
-        assertEq(
-            uint256(report.violationType),
-            uint256(InternationalLawEnforcer.ViolationType.HUMAN_RIGHTS)
-        );
-        assertEq(
-            uint256(report.severity),
-            uint256(InternationalLawEnforcer.ViolationSeverity.MINOR)
-        );
+        assertEq(uint256(report.violationType), uint256(InternationalLawEnforcer.ViolationType.HUMAN_RIGHTS));
+        assertEq(uint256(report.severity), uint256(InternationalLawEnforcer.ViolationSeverity.MINOR));
         assertFalse(report.resolved);
         assertEq(
             report.evidence,
             "France allowed Netanyahu to fly through its airspace despite active ICC arrest warrant, violating international criminal law enforcement obligations"
         );
 
-        console2.log(
-            "Violation reported successfully by Germany against France"
-        );
+        console2.log("Violation reported successfully by Germany against France");
         console2.log("Report ID: 1");
         console2.log("Violation Type: HUMAN_RIGHTS");
         console2.log("Severity: MINOR");
@@ -261,9 +225,7 @@ contract InternationalLawEnforcerTest is Test {
         console2.log("Expected penalty:", expectedPenalty / 1 ether, "ETH");
 
         // Get France's deposit before resolution
-        uint256 franceDepositBefore = intlLaw
-            .getCountryInfo(france)
-            .depositAmount;
+        uint256 franceDepositBefore = intlLaw.getCountryInfo(france).depositAmount;
 
         // Resolve the violation
         vm.prank(address(kleros));
@@ -275,31 +237,19 @@ contract InternationalLawEnforcerTest is Test {
         console2.log("Violation resolved - penalty applied");
 
         // Verify the resolution
-        InternationalLawEnforcer.ViolationReport memory resolvedReport = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.ViolationReport memory resolvedReport = intlLaw.getViolationReport(1);
         assertTrue(resolvedReport.resolved);
         assertTrue(resolvedReport.violationConfirmed);
         assertEq(resolvedReport.penalty, expectedPenalty);
 
         // Verify France's updated status
-        InternationalLawEnforcer.Country memory franceAfter = intlLaw
-            .getCountryInfo(france);
-        assertEq(
-            franceAfter.depositAmount,
-            franceDepositBefore - expectedPenalty
-        );
+        InternationalLawEnforcer.Country memory franceAfter = intlLaw.getCountryInfo(france);
+        assertEq(franceAfter.depositAmount, franceDepositBefore - expectedPenalty);
         assertEq(franceAfter.complianceScore, 95); // 100 - 5 for minor violation
         assertEq(franceAfter.violationCount, 1);
 
-        console2.log(
-            "France's new compliance score:",
-            franceAfter.complianceScore
-        );
-        console2.log(
-            "France's remaining deposit:",
-            franceAfter.depositAmount / 1 ether,
-            "ETH"
-        );
+        console2.log("France's new compliance score:", franceAfter.complianceScore);
+        console2.log("France's remaining deposit:", franceAfter.depositAmount / 1 ether, "ETH");
         console2.log("Penalty amount:", expectedPenalty / 1 ether, "ETH");
 
         // Verify penalty distribution (simulate by checking the math)
@@ -310,16 +260,8 @@ contract InternationalLawEnforcerTest is Test {
 
         console2.log("Penalty distribution:");
         console2.log("- Victims fund:", expectedVictims / 1 ether, "ETH (40%)");
-        console2.log(
-            "- Peacekeeping fund:",
-            expectedPeacekeeping / 1 ether,
-            "ETH (30%)"
-        );
-        console2.log(
-            "- Monitoring fund:",
-            expectedMonitoring / 1 ether,
-            "ETH (20%)"
-        );
+        console2.log("- Peacekeeping fund:", expectedPeacekeeping / 1 ether, "ETH (30%)");
+        console2.log("- Monitoring fund:", expectedMonitoring / 1 ether, "ETH (20%)");
         console2.log("- Juror rewards:", expectedJurors / 1 ether, "ETH (10%)");
 
         console2.log("=== Scenario Complete ===");
@@ -331,11 +273,7 @@ contract InternationalLawEnforcerTest is Test {
     function test_ReportViolation() public {
         vm.prank(usa);
         vm.expectEmit(true, true, false, true);
-        emit ViolationReported(
-            1,
-            china,
-            InternationalLawEnforcer.ViolationType.TRADE_VIOLATION
-        );
+        emit ViolationReported(1, china, InternationalLawEnforcer.ViolationType.TRADE_VIOLATION);
 
         intlLaw.reportViolation{value: REPORTING_FEE}(
             china,
@@ -344,18 +282,11 @@ contract InternationalLawEnforcerTest is Test {
             "Unfair trade practices and tariff violations"
         );
 
-        InternationalLawEnforcer.ViolationReport memory report = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(1);
         assertEq(report.reporter, usa);
         assertEq(report.violatorCountry, china);
-        assertEq(
-            uint256(report.violationType),
-            uint256(InternationalLawEnforcer.ViolationType.TRADE_VIOLATION)
-        );
-        assertEq(
-            uint256(report.severity),
-            uint256(InternationalLawEnforcer.ViolationSeverity.MODERATE)
-        );
+        assertEq(uint256(report.violationType), uint256(InternationalLawEnforcer.ViolationType.TRADE_VIOLATION));
+        assertEq(uint256(report.severity), uint256(InternationalLawEnforcer.ViolationSeverity.MODERATE));
         assertFalse(report.resolved);
     }
 
@@ -418,8 +349,7 @@ contract InternationalLawEnforcerTest is Test {
             "Territorial sovereignty violation"
         );
 
-        InternationalLawEnforcer.ViolationReport memory report = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(1);
         uint256 disputeID = report.klerosDisputeID;
 
         // Kleros confirms violation
@@ -428,28 +358,21 @@ contract InternationalLawEnforcerTest is Test {
         // Calculate expected penalty
         uint256 expectedPenalty = (COUNTRY_DEPOSIT * 30) / 100; // 30% for serious
 
-        uint256 franceDepositBefore = intlLaw
-            .getCountryInfo(france)
-            .depositAmount;
+        uint256 franceDepositBefore = intlLaw.getCountryInfo(france).depositAmount;
 
         // Resolve violation
         vm.prank(address(kleros));
         intlLaw.resolveViolation(1);
 
         // Verify resolution
-        InternationalLawEnforcer.ViolationReport memory resolvedReport = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.ViolationReport memory resolvedReport = intlLaw.getViolationReport(1);
         assertTrue(resolvedReport.resolved);
         assertTrue(resolvedReport.violationConfirmed);
         assertEq(resolvedReport.penalty, expectedPenalty);
 
         // Verify France's updated status
-        InternationalLawEnforcer.Country memory franceAfter = intlLaw
-            .getCountryInfo(france);
-        assertEq(
-            franceAfter.depositAmount,
-            franceDepositBefore - expectedPenalty
-        );
+        InternationalLawEnforcer.Country memory franceAfter = intlLaw.getCountryInfo(france);
+        assertEq(franceAfter.depositAmount, franceDepositBefore - expectedPenalty);
         assertEq(franceAfter.complianceScore, 75); // 100 - 25 for serious violation
         assertEq(franceAfter.violationCount, 1);
     }
@@ -467,34 +390,27 @@ contract InternationalLawEnforcerTest is Test {
             "Alleged human rights violations"
         );
 
-        InternationalLawEnforcer.ViolationReport memory report = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(1);
         uint256 disputeID = report.klerosDisputeID;
 
         // Kleros rejects violation
         kleros.giveRuling(disputeID, 1); // 1 = no violation
 
-        uint256 chinaDepositBefore = intlLaw
-            .getCountryInfo(china)
-            .depositAmount;
-        uint256 chinaScoreBefore = intlLaw
-            .getCountryInfo(china)
-            .complianceScore;
+        uint256 chinaDepositBefore = intlLaw.getCountryInfo(china).depositAmount;
+        uint256 chinaScoreBefore = intlLaw.getCountryInfo(china).complianceScore;
 
         // Resolve violation
         vm.prank(address(kleros));
         intlLaw.resolveViolation(1);
 
         // Verify resolution
-        InternationalLawEnforcer.ViolationReport memory resolvedReport = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.ViolationReport memory resolvedReport = intlLaw.getViolationReport(1);
         assertTrue(resolvedReport.resolved);
         assertFalse(resolvedReport.violationConfirmed);
         assertEq(resolvedReport.penalty, 0);
 
         // Verify China's status unchanged
-        InternationalLawEnforcer.Country memory chinaAfter = intlLaw
-            .getCountryInfo(china);
+        InternationalLawEnforcer.Country memory chinaAfter = intlLaw.getCountryInfo(china);
         assertEq(chinaAfter.depositAmount, chinaDepositBefore);
         assertEq(chinaAfter.complianceScore, chinaScoreBefore);
         assertEq(chinaAfter.violationCount, 0);
@@ -542,9 +458,7 @@ contract InternationalLawEnforcerTest is Test {
         for (uint256 i = 0; i < 4; i++) {
             vm.deal(testCountries[i], COUNTRY_DEPOSIT + 1 ether);
             vm.prank(testCountries[i]);
-            intlLaw.registerCountry{value: COUNTRY_DEPOSIT}(
-                string(abi.encodePacked("Test Country ", vm.toString(i)))
-            );
+            intlLaw.registerCountry{value: COUNTRY_DEPOSIT}(string(abi.encodePacked("Test Country ", vm.toString(i))));
         }
 
         // Test each severity level
@@ -554,10 +468,8 @@ contract InternationalLawEnforcerTest is Test {
         expectedPenalties[2] = (COUNTRY_DEPOSIT * 30) / 100; // SERIOUS: 30%
         expectedPenalties[3] = (COUNTRY_DEPOSIT * 50) / 100; // GRAVE: 50%
 
-        InternationalLawEnforcer.ViolationSeverity[]
-            memory severities = new InternationalLawEnforcer.ViolationSeverity[](
-                4
-            );
+        InternationalLawEnforcer.ViolationSeverity[] memory severities =
+            new InternationalLawEnforcer.ViolationSeverity[](4);
         severities[0] = InternationalLawEnforcer.ViolationSeverity.MINOR;
         severities[1] = InternationalLawEnforcer.ViolationSeverity.MODERATE;
         severities[2] = InternationalLawEnforcer.ViolationSeverity.SERIOUS;
@@ -567,15 +479,11 @@ contract InternationalLawEnforcerTest is Test {
             // Report violation with current severity using fresh country
             vm.prank(germany);
             intlLaw.reportViolation{value: REPORTING_FEE}(
-                testCountries[i],
-                InternationalLawEnforcer.ViolationType.WAR_CRIMES,
-                severities[i],
-                "Test violation"
+                testCountries[i], InternationalLawEnforcer.ViolationType.WAR_CRIMES, severities[i], "Test violation"
             );
 
             uint256 reportID = i + 1;
-            InternationalLawEnforcer.ViolationReport memory report = intlLaw
-                .getViolationReport(reportID);
+            InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(reportID);
 
             // Kleros confirms violation
             kleros.giveRuling(report.klerosDisputeID, 2);
@@ -587,8 +495,7 @@ contract InternationalLawEnforcerTest is Test {
             vm.prank(address(kleros));
             intlLaw.resolveViolation(reportID);
 
-            InternationalLawEnforcer.ViolationReport
-                memory resolvedReport = intlLaw.getViolationReport(reportID);
+            InternationalLawEnforcer.ViolationReport memory resolvedReport = intlLaw.getViolationReport(reportID);
             assertEq(resolvedReport.penalty, expectedPenalty);
         }
     }
@@ -607,10 +514,8 @@ contract InternationalLawEnforcerTest is Test {
         expectedScores[2] = 55; // 80 - 25 for SERIOUS
         expectedScores[3] = 15; // 55 - 40 for GRAVE
 
-        InternationalLawEnforcer.ViolationSeverity[]
-            memory severities = new InternationalLawEnforcer.ViolationSeverity[](
-                4
-            );
+        InternationalLawEnforcer.ViolationSeverity[] memory severities =
+            new InternationalLawEnforcer.ViolationSeverity[](4);
         severities[0] = InternationalLawEnforcer.ViolationSeverity.MINOR;
         severities[1] = InternationalLawEnforcer.ViolationSeverity.MODERATE;
         severities[2] = InternationalLawEnforcer.ViolationSeverity.SERIOUS;
@@ -620,15 +525,11 @@ contract InternationalLawEnforcerTest is Test {
             // Report and resolve violation
             vm.prank(usa);
             intlLaw.reportViolation{value: REPORTING_FEE}(
-                china,
-                InternationalLawEnforcer.ViolationType.HUMAN_RIGHTS,
-                severities[i],
-                "Test violation"
+                china, InternationalLawEnforcer.ViolationType.HUMAN_RIGHTS, severities[i], "Test violation"
             );
 
             uint256 reportID = i + 1;
-            InternationalLawEnforcer.ViolationReport memory report = intlLaw
-                .getViolationReport(reportID);
+            InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(reportID);
 
             kleros.giveRuling(report.klerosDisputeID, 2);
 
@@ -636,8 +537,7 @@ contract InternationalLawEnforcerTest is Test {
             intlLaw.resolveViolation(reportID);
 
             // Check compliance score
-            InternationalLawEnforcer.Country memory chinaInfo = intlLaw
-                .getCountryInfo(china);
+            InternationalLawEnforcer.Country memory chinaInfo = intlLaw.getCountryInfo(china);
             assertEq(chinaInfo.complianceScore, expectedScores[i]);
         }
     }
@@ -678,8 +578,7 @@ contract InternationalLawEnforcerTest is Test {
             "Environmental damage"
         );
 
-        InternationalLawEnforcer.ViolationReport memory report = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(1);
         kleros.giveRuling(report.klerosDisputeID, 2);
 
         vm.prank(address(kleros));
@@ -713,12 +612,7 @@ contract InternationalLawEnforcerTest is Test {
         address newMonitoring = makeAddr("newMonitoring");
         address newJurors = makeAddr("newJurors");
 
-        intlLaw.updateFundAddresses(
-            newVictims,
-            newPeacekeeping,
-            newMonitoring,
-            newJurors
-        );
+        intlLaw.updateFundAddresses(newVictims, newPeacekeeping, newMonitoring, newJurors);
 
         assertEq(intlLaw.victimsCompensationFund(), newVictims);
         assertEq(intlLaw.peacekeepingFund(), newPeacekeeping);
@@ -751,18 +645,15 @@ contract InternationalLawEnforcerTest is Test {
             "Major war crimes"
         );
 
-        InternationalLawEnforcer.ViolationReport memory report = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(1);
         kleros.giveRuling(report.klerosDisputeID, 2);
 
         vm.prank(address(kleros));
         intlLaw.resolveViolation(1);
 
         // Check what actually happened - the contract seems to leave some funds
-        InternationalLawEnforcer.ViolationReport memory resolvedReport = intlLaw
-            .getViolationReport(1);
-        InternationalLawEnforcer.Country memory poorCountryAfter = intlLaw
-            .getCountryInfo(poorCountry);
+        InternationalLawEnforcer.ViolationReport memory resolvedReport = intlLaw.getViolationReport(1);
+        InternationalLawEnforcer.Country memory poorCountryAfter = intlLaw.getCountryInfo(poorCountry);
 
         // Test that a penalty was applied and some funds were taken
         assertTrue(resolvedReport.penalty > 0);
@@ -780,7 +671,7 @@ contract InternationalLawEnforcerTest is Test {
         uint256 balanceBefore = address(intlLaw).balance;
 
         vm.deal(address(this), 10 ether);
-        (bool success, ) = address(intlLaw).call{value: 5 ether}("");
+        (bool success,) = address(intlLaw).call{value: 5 ether}("");
 
         assertTrue(success);
         assertEq(address(intlLaw).balance, balanceBefore + 5 ether);
@@ -802,16 +693,10 @@ contract InternationalLawEnforcerTest is Test {
         uint256 ruling
     ) internal returns (uint256 reportID) {
         vm.prank(reporterAddr);
-        intlLaw.reportViolation{value: REPORTING_FEE}(
-            violator,
-            violationType,
-            severity,
-            evidence
-        );
+        intlLaw.reportViolation{value: REPORTING_FEE}(violator, violationType, severity, evidence);
 
         reportID = intlLaw.reportCounter();
-        InternationalLawEnforcer.ViolationReport memory report = intlLaw
-            .getViolationReport(reportID);
+        InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(reportID);
 
         kleros.giveRuling(report.klerosDisputeID, ruling);
 
@@ -864,8 +749,7 @@ contract InternationalLawEnforcerTest is Test {
             2
         );
 
-        InternationalLawEnforcer.Country memory chinaAfter1 = intlLaw
-            .getCountryInfo(china);
+        InternationalLawEnforcer.Country memory chinaAfter1 = intlLaw.getCountryInfo(china);
         console2.log("After 1st violation - China compliance score reduced");
         console2.log("China violation count: 1");
 
@@ -879,11 +763,8 @@ contract InternationalLawEnforcerTest is Test {
             2
         );
 
-        InternationalLawEnforcer.Country memory chinaAfter2 = intlLaw
-            .getCountryInfo(china);
-        console2.log(
-            "After 2nd violation - China compliance score further reduced"
-        );
+        InternationalLawEnforcer.Country memory chinaAfter2 = intlLaw.getCountryInfo(china);
+        console2.log("After 2nd violation - China compliance score further reduced");
         console2.log("China violation count: 2");
 
         // Verify escalating penalties
@@ -927,8 +808,7 @@ contract InternationalLawEnforcerTest is Test {
             2
         );
 
-        InternationalLawEnforcer.ViolationReport memory report = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(1);
         uint256 penalty = report.penalty;
 
         console2.log("Total penalty distributed successfully");
@@ -941,10 +821,7 @@ contract InternationalLawEnforcerTest is Test {
 
         // Verify distributions
         assertEq(victims.balance, victimsBefore + expectedVictims);
-        assertEq(
-            peacekeeping.balance,
-            peacekeepingBefore + expectedPeacekeeping
-        );
+        assertEq(peacekeeping.balance, peacekeepingBefore + expectedPeacekeeping);
         assertEq(monitoring.balance, monitoringBefore + expectedMonitoring);
         assertEq(jurors.balance, jurorsBefore + expectedJurors);
 
@@ -957,8 +834,7 @@ contract InternationalLawEnforcerTest is Test {
     function test_AllViolationTypes() public {
         console2.log("=== All Violation Types Test ===");
 
-        InternationalLawEnforcer.ViolationType[]
-            memory types = new InternationalLawEnforcer.ViolationType[](5);
+        InternationalLawEnforcer.ViolationType[] memory types = new InternationalLawEnforcer.ViolationType[](5);
         types[0] = InternationalLawEnforcer.ViolationType.WAR_CRIMES;
         types[1] = InternationalLawEnforcer.ViolationType.TERRITORIAL_DISPUTE;
         types[2] = InternationalLawEnforcer.ViolationType.TRADE_VIOLATION;
@@ -983,8 +859,7 @@ contract InternationalLawEnforcerTest is Test {
                 string(abi.encodePacked("Violation type ", vm.toString(i)))
             );
 
-            InternationalLawEnforcer.ViolationReport memory report = intlLaw
-                .getViolationReport(i + 1);
+            InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(i + 1);
             assertEq(uint256(report.violationType), uint256(types[i]));
 
             console2.log("Violation type reported successfully");
@@ -999,9 +874,7 @@ contract InternationalLawEnforcerTest is Test {
         console2.log("");
         console2.log("BACKGROUND:");
         console2.log("- ICC has issued arrest warrant for Netanyahu");
-        console2.log(
-            "- France, as ICC member, is obligated to arrest him if he enters French territory"
-        );
+        console2.log("- France, as ICC member, is obligated to arrest him if he enters French territory");
         console2.log("- Netanyahu's plane flies through French airspace");
         console2.log("- France fails to intercept or deny passage");
         console2.log("");
@@ -1014,9 +887,7 @@ contract InternationalLawEnforcerTest is Test {
 
         // Germany reports the violation
         console2.log("VIOLATION REPORTING:");
-        console2.log(
-            "Germany reports France for failing to enforce ICC arrest warrant"
-        );
+        console2.log("Germany reports France for failing to enforce ICC arrest warrant");
 
         vm.prank(germany);
         intlLaw.reportViolation{value: REPORTING_FEE}(
@@ -1031,8 +902,7 @@ contract InternationalLawEnforcerTest is Test {
         console2.log("");
 
         // Kleros deliberation
-        InternationalLawEnforcer.ViolationReport memory report = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(1);
 
         console2.log("KLEROS ARBITRATION:");
         console2.log("Dispute created and reviewed by jury");
@@ -1041,9 +911,7 @@ contract InternationalLawEnforcerTest is Test {
         // Jury decides violation occurred
         kleros.giveRuling(report.klerosDisputeID, 2);
         console2.log("Kleros jury rules: VIOLATION CONFIRMED");
-        console2.log(
-            "  Reasoning: France failed to fulfill ICC cooperation obligations"
-        );
+        console2.log("  Reasoning: France failed to fulfill ICC cooperation obligations");
         console2.log("");
 
         // Calculate and display penalty details
@@ -1064,19 +932,13 @@ contract InternationalLawEnforcerTest is Test {
         console2.log("");
 
         // Display final state
-        InternationalLawEnforcer.Country memory franceAfter = intlLaw
-            .getCountryInfo(france);
-        InternationalLawEnforcer.ViolationReport memory finalReport = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.Country memory franceAfter = intlLaw.getCountryInfo(france);
+        InternationalLawEnforcer.ViolationReport memory finalReport = intlLaw.getViolationReport(1);
 
         console2.log("FINAL STATE:");
         console2.log("France - Deposit:", franceAfter.depositAmount / 1 ether);
         console2.log("ETH (reduced by", finalReport.penalty / 1 ether, "ETH)");
-        console2.log(
-            "France - Compliance Score:",
-            franceAfter.complianceScore,
-            "(reduced by 5 points)"
-        );
+        console2.log("France - Compliance Score:", franceAfter.complianceScore, "(reduced by 5 points)");
         console2.log("France - Violation Count:", franceAfter.violationCount);
         console2.log("");
 
@@ -1129,8 +991,7 @@ contract InternationalLawEnforcerTest is Test {
         console2.log("Violation reporting gas cost measured");
 
         // Test resolution gas cost
-        InternationalLawEnforcer.ViolationReport memory report = intlLaw
-            .getViolationReport(1);
+        InternationalLawEnforcer.ViolationReport memory report = intlLaw.getViolationReport(1);
         kleros.giveRuling(report.klerosDisputeID, 2);
 
         vm.prank(address(kleros));
