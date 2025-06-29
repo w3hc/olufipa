@@ -26,6 +26,7 @@ contract InternationalLawEnforcer {
         MODERATE, // 15% penalty, -15 compliance score
         SERIOUS, // 30% penalty, -25 compliance score
         GRAVE // 50% penalty, -40 compliance score
+
     }
 
     /**
@@ -38,6 +39,7 @@ contract InternationalLawEnforcer {
         TRADE_VIOLATION, // International trade agreement breaches
         HUMAN_RIGHTS, // Human rights violations
         ENVIRONMENTAL // Environmental protection violations
+
     }
 
     /**
@@ -118,11 +120,7 @@ contract InternationalLawEnforcer {
      * @param name The name of the country
      * @param deposit The amount of ETH deposited
      */
-    event CountryRegistered(
-        address indexed country,
-        string name,
-        uint256 deposit
-    );
+    event CountryRegistered(address indexed country, string name, uint256 deposit);
 
     /**
      * @notice Emitted when a violation is reported
@@ -130,11 +128,7 @@ contract InternationalLawEnforcer {
      * @param violator The address of the accused country
      * @param violationType The type of violation reported
      */
-    event ViolationReported(
-        uint256 indexed reportID,
-        address indexed violator,
-        ViolationType violationType
-    );
+    event ViolationReported(uint256 indexed reportID, address indexed violator, ViolationType violationType);
 
     /**
      * @notice Emitted when a violation report is resolved by Kleros
@@ -142,11 +136,7 @@ contract InternationalLawEnforcer {
      * @param violationConfirmed Whether the violation was confirmed
      * @param penalty The penalty amount applied
      */
-    event ViolationResolved(
-        uint256 indexed reportID,
-        bool violationConfirmed,
-        uint256 penalty
-    );
+    event ViolationResolved(uint256 indexed reportID, bool violationConfirmed, uint256 penalty);
 
     /**
      * @notice Emitted when penalty funds are distributed
@@ -154,29 +144,19 @@ contract InternationalLawEnforcer {
      * @param penalty The total penalty amount distributed
      * @param violator The address of the country that was penalized
      */
-    event PenaltyDistributed(
-        uint256 indexed reportID,
-        uint256 penalty,
-        address violator
-    );
+    event PenaltyDistributed(uint256 indexed reportID, uint256 penalty, address violator);
 
     /// @notice Restricts function access to only the Kleros arbitrator
     /// @dev Used for functions that should only be called by the arbitration system
     modifier onlyKleros() {
-        require(
-            msg.sender == address(klerosArbitrator),
-            "Only Kleros can call this function"
-        );
+        require(msg.sender == address(klerosArbitrator), "Only Kleros can call this function");
         _;
     }
 
     /// @notice Restricts function access to only participating countries
     /// @dev Used for functions that require the caller to be a registered country
     modifier onlyParticipatingCountry() {
-        require(
-            countries[msg.sender].isParticipating,
-            "Country must be participating"
-        );
+        require(countries[msg.sender].isParticipating, "Country must be participating");
         _;
     }
 
@@ -211,10 +191,7 @@ contract InternationalLawEnforcer {
      */
     function registerCountry(string memory _name) external payable {
         require(msg.value > 0, "Must deposit funds to participate");
-        require(
-            !countries[msg.sender].isParticipating,
-            "Country already registered"
-        );
+        require(!countries[msg.sender].isParticipating, "Country already registered");
 
         countries[msg.sender] = Country({
             name: _name,
@@ -241,10 +218,7 @@ contract InternationalLawEnforcer {
         ViolationSeverity _severity,
         string memory _evidence
     ) external payable onlyParticipatingCountry {
-        require(
-            countries[_violatorCountry].isParticipating,
-            "Violator must be participating country"
-        );
+        require(countries[_violatorCountry].isParticipating, "Violator must be participating country");
         require(msg.value >= 0.01 ether, "Must stake reporting fee");
 
         // Create dispute in Kleros
@@ -286,19 +260,13 @@ contract InternationalLawEnforcer {
             report.violationConfirmed = true;
 
             // Calculate penalty based on severity and repeat offenses
-            uint256 penalty = calculatePenalty(
-                report.violatorCountry,
-                report.severity
-            );
+            uint256 penalty = calculatePenalty(report.violatorCountry, report.severity);
             report.penalty = penalty;
 
             // Update country stats
             Country storage violator = countries[report.violatorCountry];
             violator.violationCount++;
-            violator.complianceScore = updateComplianceScore(
-                violator.complianceScore,
-                report.severity
-            );
+            violator.complianceScore = updateComplianceScore(violator.complianceScore, report.severity);
 
             // Apply penalty if violator has sufficient deposit
             if (violator.depositAmount >= penalty) {
@@ -334,11 +302,7 @@ contract InternationalLawEnforcer {
             }
         }
 
-        emit ViolationResolved(
-            _reportID,
-            report.violationConfirmed,
-            report.penalty
-        );
+        emit ViolationResolved(_reportID, report.violationConfirmed, report.penalty);
     }
 
     /**
@@ -348,10 +312,7 @@ contract InternationalLawEnforcer {
      * @param _severity The severity level of the violation
      * @return The calculated penalty amount in wei
      */
-    function calculatePenalty(
-        address _violator,
-        ViolationSeverity _severity
-    ) internal view returns (uint256) {
+    function calculatePenalty(address _violator, ViolationSeverity _severity) internal view returns (uint256) {
         Country memory violator = countries[_violator];
         uint256 basePenalty;
 
@@ -379,10 +340,11 @@ contract InternationalLawEnforcer {
      * @param _severity The severity of the violation
      * @return The updated compliance score (minimum 0)
      */
-    function updateComplianceScore(
-        uint256 _currentScore,
-        ViolationSeverity _severity
-    ) internal pure returns (uint256) {
+    function updateComplianceScore(uint256 _currentScore, ViolationSeverity _severity)
+        internal
+        pure
+        returns (uint256)
+    {
         uint256 reduction;
 
         if (_severity == ViolationSeverity.MINOR) {
@@ -413,23 +375,16 @@ contract InternationalLawEnforcer {
         uint256 toJurors = (_penalty * 10) / 100;
 
         // Use call instead of transfer for better gas handling
-        (bool success1, ) = victimsCompensationFund.call{value: toVictims}("");
-        (bool success2, ) = peacekeepingFund.call{value: toPeacekeeping}("");
-        (bool success3, ) = monitoringSystemFund.call{value: toMonitoring}("");
-        (bool success4, ) = jurorRewardFund.call{value: toJurors}("");
+        (bool success1,) = victimsCompensationFund.call{value: toVictims}("");
+        (bool success2,) = peacekeepingFund.call{value: toPeacekeeping}("");
+        (bool success3,) = monitoringSystemFund.call{value: toMonitoring}("");
+        (bool success4,) = jurorRewardFund.call{value: toJurors}("");
 
         // If any transfer fails, keep the funds in the contract
         // This is safer than reverting the entire transaction
-        require(
-            success1 && success2 && success3 && success4,
-            "Fund distribution failed"
-        );
+        require(success1 && success2 && success3 && success4, "Fund distribution failed");
 
-        emit PenaltyDistributed(
-            _reportID,
-            _penalty,
-            violationReports[_reportID].violatorCountry
-        );
+        emit PenaltyDistributed(_reportID, _penalty, violationReports[_reportID].violatorCountry);
     }
 
     /**
@@ -446,9 +401,7 @@ contract InternationalLawEnforcer {
      * @param _country The address of the country to query
      * @return The Country struct containing all country information
      */
-    function getCountryInfo(
-        address _country
-    ) external view returns (Country memory) {
+    function getCountryInfo(address _country) external view returns (Country memory) {
         return countries[_country];
     }
 
@@ -458,9 +411,7 @@ contract InternationalLawEnforcer {
      * @param _reportID The ID of the violation report to query
      * @return The ViolationReport struct containing all report information
      */
-    function getViolationReport(
-        uint256 _reportID
-    ) external view returns (ViolationReport memory) {
+    function getViolationReport(uint256 _reportID) external view returns (ViolationReport memory) {
         return violationReports[_reportID];
     }
 
