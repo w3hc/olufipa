@@ -1,66 +1,66 @@
-## Foundry
+# Olufipa
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Onchain International Law Enforcement System.
 
-Foundry consists of:
+## Motivation 
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+International law is apparently broken. Countries routinely ignore treaties, commit war crimes, and face zero consequences. 
 
-## Documentation
+## Workflow
 
-https://book.getfoundry.sh/
+1. **Countries deposit funds** to participate in the system
+2. **Violations are reported** by participating nations with evidence
+3. **Kleros jurors decide** if violations occurred 
+4. **Smart contracts automatically** apply penalties and distribute funds
 
-## Usage
+## Install
 
-### Build
-
-```shell
-$ forge build
+```bash
+# Clone and build
+git clone <repo>
+cd olufipa
+forge build
 ```
 
-### Test
+## Test
 
-```shell
-$ forge test
+```bash
+# Run tests
+forge test
 ```
 
-### Format
+## Deploy
 
-```shell
-$ forge fmt
+```bash
+# Deploy locally
+anvil # (separate terminal)
+forge script script/Deploy.s.sol:Deploy --rpc-url http://localhost:8545 --broadcast
 ```
 
-### Gas Snapshots
+## Key Features
 
-```shell
-$ forge snapshot
+- **Automated penalties** based on violation severity
+- **Escalating punishments** for repeat offenders  
+- **Transparent fund distribution**: 40% victims, 30% peacekeeping, 20% monitoring, 10% jurors
+- **Compliance scoring** system
+- **Decentralized arbitration** via Kleros integration
+
+## Architecture
+
+```
+Countries → Deposit Funds → Report Violations → Kleros Decides → Auto-Execute Penalties
 ```
 
-### Anvil
+## Support
 
-```shell
-$ anvil
-```
+Feel free to reach out to [Julien](https://github.com/julienbrg) on [Farcaster](https://warpcast.com/julien-),
+[Element](https://matrix.to/#/@julienbrg:matrix.org),
+[Status](https://status.app/u/iwSACggKBkp1bGllbgM=#zQ3shmh1sbvE6qrGotuyNQB22XU5jTrZ2HFC8bA56d5kTS2fy),
+[Telegram](https://t.me/julienbrg), [Twitter](https://twitter.com/julienbrg),
+[Discord](https://discordapp.com/users/julienbrg), or [LinkedIn](https://www.linkedin.com/in/julienberanger/).
 
-### Deploy
+## License
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+This project is licensed under the GNU General Public License v3.0.
 
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+<img src="https://bafkreid5xwxz4bed67bxb2wjmwsec4uhlcjviwy7pkzwoyu5oesjd3sp64.ipfs.w3s.link" alt="built-with-ethereum-w3hc" width="100"/>

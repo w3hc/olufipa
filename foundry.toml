@@ -2,5 +2,12 @@
 src = "src"
 out = "out"
 libs = ["lib"]
+solc = "0.8.19"
 
-# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+[rpc_endpoints]
+mainnet = "https://eth-mainnet.alchemyapi.io/v2/YOUR_API_KEY"
+sepolia = "https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY"
+
+[etherscan]
+mainnet = { key = "YOUR_ETHERSCAN_API_KEY" }
+sepolia = { key = "YOUR_ETHERSCAN_API_KEY" }
